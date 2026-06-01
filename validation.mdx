@@ -1,0 +1,103 @@
+---
+title: "Validation and selection"
+description: "Select Hyb-FPDE settings with grid search and perturbation curves"
+---
+
+FPDE includes validation helpers for choosing explanation settings.
+Use them when you want a reproducible fixed configuration before explaining evaluation or test samples.
+
+## Select `lambda_hyb`
+
+`FPDEEngine.select_lambda` evaluates a grid of `lambda_hyb` candidates on held-out samples.
+For each candidate, it computes deletion and insertion curves.
+
+```python
+selection = engine.select_lambda(
+    X_val,
+    lambda_hyb_grid=(0.0, 0.25, 0.5, 0.75, 1.0),
+    fractions=(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
+)
+
+print(selection.best_lambda)
+print(selection.best_config)
+```
+
+The combined score is:
+
+```text
+combined_score = 0.5 * (deletion_drop_auc + insertion_auc)
+```
+
+The selected lambda is the candidate with the best validation score.
+Use the selected value for later calls to `explain_one`, `explain_batch`, or `explain_matrix`.
+
+```python
+attributions, details = engine.explain_batch(
+    X_test,
+    lambda_hyb=selection.best_lambda,
+)
+```
+
+<Tip>
+  Use validation data that is separate from the final reporting split.
+  Record `selection.rows` with your experiment artifacts.
+</Tip>
+
+## Run grid search
+
+`FPDEEngine.grid_search` compares Diff-FPDE, Cos-FPDE, and Hyb-FPDE settings.
+
+```python
+result = engine.grid_search(
+    X_eval,
+    objective="blackbox_agreement",
+    fpde_mode_grid=("diff", "cos", "hyb_grid"),
+    normalize_grid=("l1", "none"),
+    lambda_hyb_grid=(0.0, 0.5, 1.0),
+    anchor_strategy_grid=("mean",),
+)
+
+print(result.best_config)
+print(result.sorted_rows()[:3])
+```
+
+Supported objectives are:
+
+| Objective | Use it to |
+| --- | --- |
+| `"blackbox_agreement"` | Score whether FPDE evidence agrees with the model-selected target/rival contrast. |
+| `"mean_positive_evidence"` | Score the mean positive evidence across evaluation samples. |
+| `"mean_margin_weighted_evidence"` | Weight positive evidence by the model probability margin when probabilities are available. |
+
+## Compute perturbation curves
+
+Use `perturbation_curves` when you want deletion and insertion metrics for one attribution vector.
+
+```python
+from fpde import perturbation_curves
+
+attr, detail = engine.explain_one(X_test[0], lambda_hyb=0.5)
+curves = perturbation_curves(
+    model,
+    X_test[0],
+    attr,
+    detail["target_label"],
+    engine.baseline,
+    fractions=(0.0, 0.1, 0.3, 0.5, 1.0),
+)
+
+print(curves["deletion_prob"])
+print(curves["insertion_prob"])
+```
+
+Features are ranked by signed positive attribution in descending order.
+Deletion replaces top-ranked features with the baseline.
+Insertion starts from the baseline and restores top-ranked features.
+
+## Practical checks
+
+- Confirm that `predict_proba` returns at least two class columns.
+- Confirm that `model.classes_` matches the labels used to fit FPDE prototypes.
+- Apply the same preprocessing pipeline to training, validation, and explanation data.
+- Check `exactness_residual` for numerical stability.
+- Save the grid, fractions, baseline, and selected lambda.

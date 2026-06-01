@@ -1,0 +1,12 @@
+# Local logs and temporary files
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+tmp/

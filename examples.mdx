@@ -1,0 +1,101 @@
+---
+title: "Examples"
+description: "Common FPDE usage patterns for single samples, batches, and lambda selection"
+---
+
+Use `FPDEEngine` for most workflows.
+It stores prototypes, anchors, the baseline vector, and label lookup state so you can reuse them across explanations.
+
+## Explain one sample
+
+```python
+from fpde import FPDEEngine
+
+engine = FPDEEngine.fit(X_train, y_train, model=model)
+attributions, details = engine.explain_one(X_test[0], lambda_hyb=0.5)
+
+print(details["target_label"])
+print(details["rival_label"])
+print(details["evidence"])
+```
+
+`details["target_label"]` is the model's highest-probability class.
+`details["rival_label"]` is the second-highest-probability class.
+
+## Explain a batch
+
+Use `explain_batch` when you need both attribution rows and per-sample metadata.
+
+```python
+attribution_matrix, details = engine.explain_batch(
+    X_test[:10],
+    lambda_hyb=0.5,
+    normalize="l1",
+)
+
+print(attribution_matrix.shape)
+print(details[0]["exactness_residual"])
+```
+
+Use `explain_matrix` when you only need the attribution matrix.
+
+```python
+attribution_matrix = engine.explain_matrix(X_test[:10], lambda_hyb=0.5)
+```
+
+## Select `lambda_hyb`
+
+Use held-out validation data to select a fixed Hyb-FPDE mixture.
+The selection score combines deletion and insertion perturbation curves.
+
+```python
+selection = engine.select_lambda(
+    X_val,
+    lambda_hyb_grid=(0.0, 0.25, 0.5, 0.75, 1.0),
+    fractions=(0.0, 0.1, 0.3, 0.5, 0.7, 1.0),
+)
+
+best_lambda = selection.best_lambda
+attributions, details = engine.explain_batch(X_test, lambda_hyb=best_lambda)
+```
+
+Save `selection.rows` with your experiment results so you can inspect the score for each candidate later.
+
+## Run grid search
+
+Use `grid_search` to compare Diff-FPDE, Cos-FPDE, and Hyb-FPDE candidate settings.
+
+```python
+result = engine.grid_search(
+    X_eval,
+    lambda_hyb_grid=(0.0, 0.5, 1.0),
+    normalize_grid=("l1", "none"),
+    objective="blackbox_agreement",
+)
+
+print(result.best_config)
+print(result.best_score)
+```
+
+## Direct prototype functions
+
+Use lower-level functions when you want direct control over prototypes and labels.
+
+```python
+from fpde import class_mean_prototypes, explain_with_selected_prototypes
+
+prototypes, labels = class_mean_prototypes(X_train, y_train)
+explanation = explain_with_selected_prototypes(
+    X_test[0],
+    prototypes,
+    labels,
+    positive_label=target_label,
+    negative_label=rival_label,
+    mode="diff",
+)
+
+print(explanation.attributions)
+print(explanation.evidence)
+```
+
+For repeated work, prefer `FPDEEngine`.

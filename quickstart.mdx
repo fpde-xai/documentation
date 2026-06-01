@@ -1,47 +1,128 @@
 ---
 title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+description: "Install FPDE and explain one scikit-learn classification result"
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+This guide trains a scikit-learn classifier, fits an FPDE engine on the training data, and explains one test sample.
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+The example uses the breast cancer dataset bundled with scikit-learn.
 
 ## Prerequisites
 
-Before you begin, you must have:
+Before you begin, install:
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+- Python 3.12 or newer
+- `pip`
+- A classifier that exposes `predict_proba` and `classes_`
 
 ## Get started
 
 <Steps>
   <Step title="Install">
-    Describe how to install your product or sign up.
+    Install FPDE from PyPI.
 
     ```bash
-    npm install your-package
+    python -m pip install fpde
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Train a classifier">
+    Train a classifier on the same feature space you want to explain.
 
-    ```bash
-    your-cli init
+    ```python
+    from sklearn.datasets import load_breast_cancer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+
+    data = load_breast_cancer()
+    X_train, X_test, y_train, _ = train_test_split(
+        data.data,
+        data.target,
+        test_size=0.25,
+        random_state=7,
+        stratify=data.target,
+    )
+
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    model = LogisticRegression(max_iter=2000, random_state=7)
+    model.fit(X_train, y_train)
     ```
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+  <Step title="Fit FPDE">
+    Fit reusable FPDE state from the training data and labels.
 
-    ```bash
-    your-cli start
+    ```python
+    from fpde import FPDEEngine
+
+    engine = FPDEEngine.fit(X_train, y_train, model=model)
+    ```
+  </Step>
+  <Step title="Explain one sample">
+    Explain one test sample with a fixed Hyb-FPDE mixture.
+
+    ```python
+    import numpy as np
+
+    attributions, details = engine.explain_one(X_test[0], lambda_hyb=0.5)
+
+    print(np.asarray(attributions))
+    print(details["target_label"], details["rival_label"], details["evidence"])
     ```
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Complete example
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+```python
+import numpy as np
+from sklearn.datasets import load_breast_cancer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+from fpde import FPDEEngine
+
+data = load_breast_cancer()
+X_train, X_test, y_train, _ = train_test_split(
+    data.data,
+    data.target,
+    test_size=0.25,
+    random_state=7,
+    stratify=data.target,
+)
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+model = LogisticRegression(max_iter=2000, random_state=7)
+model.fit(X_train, y_train)
+
+engine = FPDEEngine.fit(X_train, y_train, model=model)
+attributions, details = engine.explain_one(X_test[0], lambda_hyb=0.5)
+
+print(np.asarray(attributions))
+print(details["target_label"], details["rival_label"], details["evidence"])
+```
+
+Positive attribution values support the target class relative to the rival class.
+Negative values support the rival class relative to the target class.
+
+<Tip>
+  Scale features before using distance-based explanations when feature units differ.
+  FPDE expects training, validation, and explanation inputs to share the same feature space.
 </Tip>
+
+## Run the repository example
+
+Clone the repository and run the minimal example.
+
+```bash
+git clone https://github.com/fpde-xai/fpde.git
+cd fpde
+python -m pip install -e .
+python examples/minimal_fpde_example.py
+```
