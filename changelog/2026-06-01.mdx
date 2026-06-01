@@ -1,0 +1,18 @@
+---
+title: "Week of June 1, 2026"
+description: "FPDE v0.1.0 ships on PyPI with Bayesian-FPDE lambda posterior selection, a new plotting example notebook, and MIT or Apache-2.0 dual licensing."
+---
+
+## New features
+
+**FPDE is on PyPI.** The first public release (`v0.1.0`) of the `fpde` package is now available. Install it with `pip install fpde` and start producing prototype-contrast feature attributions. See the [quickstart](/quickstart) to get going.
+
+**Bayesian-FPDE.** Select the Hyb-FPDE mixture weight `lambda_hyb` by building a posterior over candidate values from held-out samples, then explain with the posterior mean. Use this when you want an uncertainty-aware choice of `lambda_hyb` instead of a single grid-search winner. See the [method overview](/method-overview) and [API reference](/api-reference).
+
+**Plotting example notebook.** A new end-to-end notebook walks through fitting prototypes, computing attributions, and visualizing them. See [examples](/examples).
+
+## Updates
+
+**Dual license.** The package is now distributed under `MIT OR Apache-2.0`, giving you the choice of either license.
+
+**Continuous publishing.** Releases now flow automatically to TestPyPI and PyPI, so future versions land faster.
