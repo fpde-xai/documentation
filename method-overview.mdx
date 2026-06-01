@@ -107,6 +107,35 @@ phi_hyb_j = lambda_hyb * phi_diff_j + (1 - lambda_hyb) * phi_cos_j
 By default, Hyb-FPDE uses L1-normalized component attribution vectors before mixing.
 Set `normalize="none"` when you want to mix the raw component scales.
 
+## Bayesian-FPDE
+
+Bayesian-FPDE replaces a single selected `lambda_hyb` with a posterior distribution over the lambda grid.
+Use it when you want to express uncertainty about the Hyb-FPDE mixture weight, or when you want a Bayesian model-averaged attribution instead of a point-selected one.
+
+`FPDEEngine.select_bayesian_lambda` evaluates the same held-out deletion and insertion validation score as `select_lambda`, then converts the finite lambda grid into a posterior.
+The default prior is `Beta(1, 1)`, which is uniform over the candidates.
+
+For each candidate, the unnormalized log-posterior is:
+
+```text
+log_likelihood = n_eval_samples * validation_score / temperature
+log_prior      = (alpha - 1) * log(lambda_hyb)
+               + (beta - 1) * log(1 - lambda_hyb)
+```
+
+Tune `alpha` and `beta` to encode prior preferences over `lambda_hyb`.
+Smaller `temperature` values make the posterior sharper around high-scoring candidates; larger values flatten it toward the prior.
+
+The normalized posterior weights produce:
+
+- `posterior_mean_lambda`: the Bayesian model-averaged mixture weight.
+- `map_lambda`: the highest-posterior lambda candidate.
+- `credible_interval`: an equal-tail credible interval on the grid for the chosen `credible_mass`.
+- `posterior_rows`: candidate rows with validation metrics and posterior mass.
+
+`engine.explain_one_bayesian`, `engine.explain_batch_bayesian`, and `engine.explain_matrix_bayesian` use `posterior_mean_lambda`.
+Because Hyb-FPDE is linear in `lambda_hyb`, this is equivalent to the expected attribution vector under the lambda posterior.
+
 ## Interpreting results
 
 An FPDE explanation contains:
