@@ -1,6 +1,6 @@
 ---
 title: "API reference"
-description: "Public FPDE classes, functions, parameters, and result objects"
+description: "Reference for FPDE engine, prototype helpers, explanation functions, metrics, plotting helpers, and result objects exported from fpde."
 ---
 
 Import the public package as `fpde`.
@@ -267,6 +267,172 @@ perturbation_curves(
 
 Computes deletion and insertion curves for one attribution vector.
 Features are ranked by signed positive attribution in descending order.
+
+## Plotting helpers
+
+The plotting helpers are exported from `fpde` and visualize FPDE attributions, prototype similarities, and perturbation curves with matplotlib.
+They require the optional `plot` extra:
+
+```bash
+python -m pip install "fpde[plot]"
+```
+
+Each function returns the matplotlib `Axes` it draws on and does not call `plt.show()` or save files.
+Pass an existing `ax=` to draw into a subplot, or omit it to create a new figure.
+
+### `plot_attributions`
+
+```python
+plot_attributions(
+    attributions,
+    *,
+    feature_names=None,
+    top_k=20,
+    normalize=False,
+    sort=True,
+    ax=None,
+    title=None,
+)
+```
+
+Plots a signed horizontal bar chart for a 1D attribution vector or an `FPDEExplanation`.
+Positive values support the target class; negative values support the rival class.
+Use `top_k` to limit the number of features and `normalize=True` to L1-normalize the displayed values.
+
+### `plot_attribution_waterfall`
+
+```python
+plot_attribution_waterfall(
+    attributions,
+    *,
+    feature_names=None,
+    top_k=10,
+    base_value=0.0,
+    ax=None,
+    title=None,
+)
+```
+
+Plots a cumulative local explanation from `base_value` to `base_value + sum(attributions)`.
+Hidden features (outside `top_k`) are grouped into one `other features` bar.
+
+### `plot_attribution_summary`
+
+```python
+plot_attribution_summary(
+    attributions,
+    *,
+    feature_values=None,
+    feature_names=None,
+    top_k=20,
+    ax=None,
+    title=None,
+    cmap="coolwarm",
+)
+```
+
+Plots a batch attribution matrix as a per-feature distribution, ordered by mean absolute attribution.
+Pass `feature_values` with the same shape as `attributions` to color points by the original feature value.
+
+### `plot_attribution_image`
+
+```python
+plot_attribution_image(
+    attributions,
+    shape=None,
+    *,
+    ax=None,
+    title=None,
+    cmap="coolwarm",
+    colorbar=True,
+    symmetric=True,
+)
+```
+
+Plots an attribution vector as a 2D heatmap.
+Pass `shape=(height, width)` for flat image vectors; `shape` is optional for already-2D arrays.
+
+### `plot_perturbation_curves`
+
+```python
+plot_perturbation_curves(curves, *, ax=None, title=None)
+```
+
+Plots the deletion and insertion probability curves returned by `perturbation_curves`.
+`curves` must contain `fractions`, `deletion_prob`, and `insertion_prob`.
+
+### `plot_local_contributions`
+
+```python
+plot_local_contributions(
+    feature_names,
+    contributions,
+    values=None,
+    *,
+    top_k=10,
+    sort_by="abs",
+    ax=None,
+    title=None,
+    xlabel="Contribution",
+    show_values=True,
+    zero_line=True,
+)
+```
+
+Plots a signed local contribution bar chart from feature names and one attribution vector.
+Pass `values` to label each bar with the corresponding feature value.
+
+### `prepare_local_contribution_data`
+
+```python
+prepare_local_contribution_data(
+    feature_names,
+    contributions,
+    values=None,
+    *,
+    top_k=10,
+    sort_by="abs",
+)
+```
+
+Returns a list of row dictionaries (`feature`, `display_name`, `contribution`, `abs_contribution`, `direction`, `direction_label`) suitable for rendering FPDE local attributions in a custom UI.
+
+### `plot_prototype_similarity_distribution`
+
+```python
+plot_prototype_similarity_distribution(
+    X,
+    target_prototype,
+    *,
+    rival_prototype=None,
+    x=None,
+    metric="cosine",
+    bins=30,
+    ax=None,
+    title=None,
+)
+```
+
+Plots the distribution of similarities from rows in `X` to the target prototype.
+Pass `rival_prototype` to overlay the rival distribution and `x` to mark the explained sample.
+`metric` is `"cosine"` or `"negative_euclidean"`.
+
+## `fpde.plots` namespace
+
+`fpde.plots` provides a compact matplotlib API for FPDE contribution arrays inspired by SHAP's plotting layout.
+Pass `show=False` to receive an `Axes` without displaying, then save with `ax.figure.savefig(...)`.
+
+```python
+from fpde.plots import FPDEPlotExplanation, bar, beeswarm, scatter, waterfall
+```
+
+| Function | Description |
+| --- | --- |
+| `FPDEPlotExplanation` | Lightweight container with `values`, `base_values`, `data`, `feature_names`, `output_names`, and `predictions`. |
+| `bar` | Plots local or global contribution importance. A 1D vector is treated as one local explanation; a 2D matrix is summarized by feature importance. |
+| `beeswarm` | Plots per-sample contributions grouped by feature. Points are colored by feature value when `data` is provided. |
+| `scatter` | Plots one feature's original value against its FPDE contribution. `feature` may be an integer index or a name from `feature_names`. |
+| `waterfall` | Plots one contribution vector from `base_value` to `prediction`. Hidden features are grouped into `other features`. |
 
 ## Result objects
 

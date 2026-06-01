@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-description: "Explain classification results with prototype-contrast feature attribution"
+description: "FPDE is a Python package for prototype-contrast feature attribution that explains scikit-learn classifiers with per-feature contributions."
 ---
 
 Feature Prototype Direction Explainer (FPDE) is a Python package for prototype-contrast feature attribution.
@@ -17,6 +17,7 @@ Use FPDE when you need a lightweight, post-hoc explanation method for tabular-st
 - Search Diff, Cos, and Hyb-FPDE candidate settings.
 - Select `lambda_hyb` with held-out deletion and insertion validation.
 - Compute deletion and insertion perturbation curves for an attribution vector.
+- Plot attribution bars, cumulative waterfalls, contribution summaries, attribution heatmaps, prototype similarity distributions, and perturbation curves.
 
 ## How FPDE explains a prediction
 
@@ -50,6 +51,12 @@ The package depends on NumPy and scikit-learn.
 
 ```bash
 python -m pip install fpde
+```
+
+To use the plotting helpers, install the optional `plot` extra, which adds matplotlib:
+
+```bash
+python -m pip install "fpde[plot]"
 ```
 
 ## Project links
