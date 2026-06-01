@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-description: "Explain classification results with prototype-contrast feature attribution"
+description: "FPDE is a Python package that explains classifier predictions with prototype-contrast feature attribution for tabular feature vectors."
 ---
 
 Feature Prototype Direction Explainer (FPDE) is a Python package for prototype-contrast feature attribution.
@@ -16,6 +16,7 @@ Use FPDE when you need a lightweight, post-hoc explanation method for tabular-st
 - Explain batches while reusing fitted prototype state.
 - Search Diff, Cos, and Hyb-FPDE candidate settings.
 - Select `lambda_hyb` with held-out deletion and insertion validation.
+- Build a Bayesian-FPDE posterior over `lambda_hyb` candidates and explain with the posterior mean.
 - Compute deletion and insertion perturbation curves for an attribution vector.
 
 ## How FPDE explains a prediction

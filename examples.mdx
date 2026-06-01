@@ -1,6 +1,6 @@
 ---
 title: "Examples"
-description: "Common FPDE usage patterns for single samples, batches, and lambda selection"
+description: "FPDE usage examples for single-sample explanations, batch explanations, lambda selection, Bayesian-FPDE posteriors, and grid search."
 ---
 
 Use `FPDEEngine` for most workflows.
@@ -60,6 +60,39 @@ attributions, details = engine.explain_batch(X_test, lambda_hyb=best_lambda)
 ```
 
 Save `selection.rows` with your experiment results so you can inspect the score for each candidate later.
+
+## Build a Bayesian-FPDE posterior over `lambda_hyb`
+
+Use `select_bayesian_lambda` when you want a posterior over the Hyb-FPDE mixture weight instead of a single selected value.
+The posterior is built on the same held-out deletion and insertion score as `select_lambda`, with a `Beta(alpha, beta)` prior and a likelihood temperature.
+
+```python
+selection = engine.select_bayesian_lambda(
+    X_val,
+    lambda_hyb_grid=(0.0, 0.25, 0.5, 0.75, 1.0),
+    alpha=1.0,
+    beta=1.0,
+    temperature=1.0,
+    credible_mass=0.95,
+)
+
+print(selection.posterior_mean_lambda)
+print(selection.map_lambda)
+print(selection.credible_interval)
+```
+
+Then explain samples with the posterior-mean `lambda_hyb`:
+
+```python
+attributions, details = engine.explain_one_bayesian(X_test[0], selection)
+
+print(details["posterior_mean_lambda"])
+print(details["credible_interval"])
+print(details["posterior_entropy"])
+```
+
+Use `explain_batch_bayesian` or `explain_matrix_bayesian` for many samples.
+Inspect `selection.sorted_rows()` to see candidates from highest to lowest posterior mass.
 
 ## Run grid search
 
