@@ -1,14 +1,14 @@
 ---
 title: "Week of June 8, 2026"
-description: "Bayesian-FPDE adds a posterior over lambda candidates, and a new plotting module visualizes attributions out of the box."
+description: "Bayesian-FPDE builds a posterior over lambda_hyb candidates, and a new optional plotting module visualizes FPDE attributions out of the box."
 ---
 
 ## New features
 
-**Bayesian-FPDE.** Build a posterior distribution over `lambda_hyb` candidates instead of picking a single value. `FPDEEngine.select_bayesian_lambda` returns a posterior mean, MAP estimate, and credible interval, and `explain_one_bayesian` and `explain_batch_bayesian` produce attributions under the posterior mean. Use this when you want model-averaged Hyb-FPDE explanations with uncertainty over the mixture weight. See [Select lambda](/select-lambda) and the [API reference](/api-reference).
+**Bayesian-FPDE.** Build a posterior over `lambda_hyb` candidates instead of picking a single value. Call `FPDEEngine.select_bayesian_lambda` to get a posterior mean, MAP estimate, and credible interval. Then use `explain_one_bayesian` or `explain_batch_bayesian` to produce attributions under the posterior mean. Reach for this when you want model-averaged Hyb-FPDE explanations with uncertainty over the mixture weight. See [Select lambda](/select-lambda) and the [API reference](/api-reference).
 
-**Plotting helpers.** A new optional plotting module visualizes FPDE attributions with bar, waterfall, beeswarm, and scatter plots, plus prototype similarity distributions and perturbation curves. Install with `pip install "fpde[plot]"`, then import from `fpde` or `fpde.plots`. See the [quickstart](/quickstart) for examples.
+**Plotting helpers.** A new optional plotting module visualizes FPDE attributions with bar, waterfall, beeswarm, and scatter plots. It also covers prototype similarity distributions and perturbation curves. Install it with `pip install "fpde[plot]"`, then import from `fpde` or `fpde.plots`. See the [quickstart](/quickstart) for examples.
 
 ## Updates
 
-**Example notebook refresh.** The legacy MNIST notebook is replaced with a focused `plot_fpde_example.ipynb` that walks through fitting an engine, generating explanations, and producing the new plots end to end.
+**Example notebook refresh.** A focused `plot_fpde_example.ipynb` replaces the legacy MNIST notebook. It walks through fitting an engine, generating explanations, and producing the new plots end to end.
