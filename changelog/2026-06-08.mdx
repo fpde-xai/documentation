@@ -1,0 +1,14 @@
+---
+title: "Week of June 8, 2026"
+description: "Bayesian-FPDE adds a posterior over lambda candidates, and a new plotting module visualizes attributions out of the box."
+---
+
+## New features
+
+**Bayesian-FPDE.** Build a posterior distribution over `lambda_hyb` candidates instead of picking a single value. `FPDEEngine.select_bayesian_lambda` returns a posterior mean, MAP estimate, and credible interval, and `explain_one_bayesian` and `explain_batch_bayesian` produce attributions under the posterior mean. Use this when you want model-averaged Hyb-FPDE explanations with uncertainty over the mixture weight. See [Select lambda](/select-lambda) and the [API reference](/api-reference).
+
+**Plotting helpers.** A new optional plotting module visualizes FPDE attributions with bar, waterfall, beeswarm, and scatter plots, plus prototype similarity distributions and perturbation curves. Install with `pip install "fpde[plot]"`, then import from `fpde` or `fpde.plots`. See the [quickstart](/quickstart) for examples.
+
+## Updates
+
+**Example notebook refresh.** The legacy MNIST notebook is replaced with a focused `plot_fpde_example.ipynb` that walks through fitting an engine, generating explanations, and producing the new plots end to end.
