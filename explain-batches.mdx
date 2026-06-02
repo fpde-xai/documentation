@@ -1,0 +1,73 @@
+---
+title: "Explain batches"
+description: "Generate attribution matrices and per-sample metadata with FPDEEngine"
+---
+
+Use `FPDEEngine.explain_batch` when you need one attribution row per sample.
+Use `FPDEEngine.explain_matrix` when you only need the attribution matrix.
+
+## Explain a batch with details
+
+```python
+attribution_matrix, details = engine.explain_batch(
+    X_test,
+    lambda_hyb=0.5,
+    normalize="l1",
+)
+
+print(attribution_matrix.shape)
+print(details[0]["target_label"])
+print(details[0]["rival_label"])
+```
+
+The matrix has shape `(n_samples, n_features)`.
+Each row is an attribution vector for the matching row in `X_test`.
+
+## Explain a batch without details
+
+```python
+attribution_matrix = engine.explain_matrix(
+    X_test,
+    lambda_hyb=0.5,
+    normalize="l1",
+)
+```
+
+Use this when you plan to aggregate or save attribution rows and do not need per-sample labels or evidence values.
+
+## Keep feature order stable
+
+FPDE assumes every matrix you pass to the engine uses the same feature order.
+Apply the same preprocessing pipeline to training, validation, and explanation data.
+
+<Warning>
+  A feature dimension mismatch means the explanation data does not match the fitted prototype state.
+  Check scaling, encoding, feature selection, and column order.
+</Warning>
+
+## Summarize a batch
+
+```python
+import numpy as np
+
+mean_abs = np.mean(np.abs(attribution_matrix), axis=0)
+top = np.argsort(mean_abs)[::-1][:10]
+
+for index in top:
+    print(feature_names[index], mean_abs[index])
+```
+
+This ranks features by average absolute attribution magnitude.
+It does not change the sign interpretation for each local explanation.
+
+## Save reproducible outputs
+
+Save the attribution matrix with enough metadata to recreate it later:
+
+- FPDE version
+- `lambda_hyb`
+- `normalize`
+- `anchor_strategy`
+- Feature names and feature order
+- Target and rival labels from `details`
+- Training data or prototype-state source

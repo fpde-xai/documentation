@@ -1,0 +1,62 @@
+---
+title: "Validate explanations"
+description: "Use perturbation curves and sanity checks to inspect FPDE attribution quality"
+---
+
+Validation helps you check whether an attribution vector behaves as expected for a fitted classifier.
+FPDE provides deletion and insertion perturbation curves for this purpose.
+
+## Compute perturbation curves
+
+```python
+from fpde import perturbation_curves
+
+attributions, details = engine.explain_one(X_test[0], lambda_hyb=0.5)
+
+curves = perturbation_curves(
+    model,
+    X_test[0],
+    attributions,
+    details["target_label"],
+    engine.baseline,
+    fractions=(0.0, 0.1, 0.3, 0.5, 1.0),
+)
+
+print(curves["deletion_prob"])
+print(curves["insertion_prob"])
+```
+
+Features are ranked by signed positive attribution in descending order.
+Deletion removes top-ranked evidence for the target class.
+Insertion restores top-ranked evidence for the target class.
+
+## Run practical checks
+
+- Confirm `predict_proba` returns at least two class columns.
+- Confirm `model.classes_` contains the labels used to fit FPDE prototypes.
+- Confirm every explained row has the same number of features as `X_train`.
+- Check that attribution values are finite.
+- Check that `details["target_label"]` and `details["rival_label"]` are different.
+- Inspect `details["exactness_residual"]` for numerical stability.
+
+## Avoid validation leakage
+
+Use separate data splits for selection and final reporting.
+For example, fit prototypes on training data, choose `lambda_hyb` on validation data, and report explanations on test data.
+
+<Warning>
+  Do not select `lambda_hyb` on the same examples you use for final claims.
+  That makes the reported validation behavior less informative.
+</Warning>
+
+## Record enough context
+
+Save the validation settings with the output:
+
+- Fractions used in deletion and insertion curves
+- Baseline vector source
+- `lambda_hyb` or `lambda_hyb_grid`
+- `normalize`
+- `anchor_strategy`
+- `eps`
+- Model and preprocessing artifacts

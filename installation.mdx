@@ -1,0 +1,62 @@
+---
+title: "Installation"
+description: "Install FPDE from PyPI or from a local repository checkout"
+---
+
+Install FPDE in the Python environment where you train or run your classifier.
+The PyPI distribution name and import package are both `fpde`.
+
+## Requirements
+
+- Python 3.12 or newer
+- NumPy
+- scikit-learn
+
+FPDE uses class probabilities for model-driven workflows.
+Pass a fitted classifier that implements `predict_proba` and exposes `classes_`.
+
+## Install from PyPI
+
+<Tabs>
+  <Tab title="pip">
+    ```bash
+    python -m pip install fpde
+    ```
+  </Tab>
+  <Tab title="uv">
+    ```bash
+    uv add fpde
+    ```
+  </Tab>
+</Tabs>
+
+## Verify the install
+
+```python
+import fpde
+from fpde import FPDEEngine
+
+print(FPDEEngine)
+```
+
+If the import succeeds, you are ready to run the [quickstart](/quickstart).
+
+## Install for local development
+
+Clone the source repository and install the package in editable mode.
+
+```bash
+git clone https://github.com/fpde-xai/fpde.git
+cd fpde
+python -m pip install -e .
+```
+
+Run the package tests from the source checkout.
+
+```bash
+python -m pytest
+```
+
+<Warning>
+  Keep documentation examples aligned with the stable PyPI release unless you explicitly document a development checkout.
+</Warning>

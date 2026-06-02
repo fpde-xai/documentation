@@ -1,32 +1,28 @@
 ---
 title: "Quickstart"
-description: "Install FPDE and explain one scikit-learn classification result"
+description: "Train a scikit-learn classifier and explain one prediction with FPDE"
 ---
 
-This guide trains a scikit-learn classifier, fits an FPDE engine on the training data, and explains one test sample.
-
+This tutorial trains a scikit-learn classifier, fits FPDE prototypes from the training data, and explains one test sample.
 The example uses the breast cancer dataset bundled with scikit-learn.
 
 ## Prerequisites
 
-Before you begin, install:
-
 - Python 3.12 or newer
-- `pip`
+- `fpde`
 - A classifier that exposes `predict_proba` and `classes_`
 
-## Get started
-
 <Steps>
-  <Step title="Install">
-    Install FPDE from PyPI.
+  <Step title="Install FPDE">
+    Install the stable package from PyPI.
 
     ```bash
     python -m pip install fpde
     ```
   </Step>
+
   <Step title="Train a classifier">
-    Train a classifier on the same feature space you want to explain.
+    Train the model on the same feature space you will explain.
 
     ```python
     from sklearn.datasets import load_breast_cancer
@@ -51,8 +47,9 @@ Before you begin, install:
     model.fit(X_train, y_train)
     ```
   </Step>
+
   <Step title="Fit FPDE">
-    Fit reusable FPDE state from the training data and labels.
+    Fit reusable class-mean prototypes from the training data.
 
     ```python
     from fpde import FPDEEngine
@@ -60,8 +57,9 @@ Before you begin, install:
     engine = FPDEEngine.fit(X_train, y_train, model=model)
     ```
   </Step>
+
   <Step title="Explain one sample">
-    Explain one test sample with a fixed Hyb-FPDE mixture.
+    Compute a Hyb-FPDE explanation with a fixed `lambda_hyb`.
 
     ```python
     import numpy as np
@@ -108,21 +106,19 @@ print(np.asarray(attributions))
 print(details["target_label"], details["rival_label"], details["evidence"])
 ```
 
-Positive attribution values support the target class relative to the rival class.
-Negative values support the rival class relative to the target class.
+## Interpret the output
 
-<Tip>
-  Scale features before using distance-based explanations when feature units differ.
-  FPDE expects training, validation, and explanation inputs to share the same feature space.
-</Tip>
+`details["target_label"]` is the model's highest-probability class.
+`details["rival_label"]` is the second-highest-probability class.
+`details["evidence"]` is the target-versus-rival contrast decomposed by FPDE.
 
-## Run the repository example
+<Note>
+  Positive attribution values support the target class.
+  Negative attribution values support the rival class.
+</Note>
 
-Clone the repository and run the minimal example.
+## Next steps
 
-```bash
-git clone https://github.com/fpde-xai/fpde.git
-cd fpde
-python -m pip install -e .
-python examples/minimal_fpde_example.py
-```
+- Use [Explain one sample](/explain-one) for a slower walkthrough of the result fields.
+- Use [Explain batches](/explain-batches) when you need an attribution matrix.
+- Use [Select lambda_hyb](/select-lambda) to choose a fixed Hyb-FPDE mixture with validation data.

@@ -1,0 +1,85 @@
+---
+title: "Explain one sample"
+description: "Fit FPDEEngine and inspect a single target-versus-rival explanation"
+---
+
+Use `FPDEEngine.explain_one` when you want one attribution vector and the metadata behind it.
+This is the common path for local explanations.
+
+## Prerequisites
+
+- A training matrix `X_train`
+- Training labels `y_train`
+- One explanation vector `x`
+- A fitted classifier with `predict_proba` and `classes_`
+
+Apply the same preprocessing to `X_train` and `x`.
+
+## Fit reusable FPDE state
+
+```python
+from fpde import FPDEEngine
+
+engine = FPDEEngine.fit(X_train, y_train, model=model)
+```
+
+FPDE builds one class-mean prototype per class.
+The engine stores those prototypes, labels, anchors, and the baseline vector.
+
+## Explain the sample
+
+```python
+attributions, details = engine.explain_one(
+    x,
+    lambda_hyb=0.5,
+    normalize="l1",
+    anchor_strategy="mean",
+)
+```
+
+`lambda_hyb` controls the Hyb-FPDE mixture.
+A value of `1.0` uses the Diff-FPDE endpoint.
+A value of `0.0` uses the Cos-FPDE endpoint.
+
+## Read the details
+
+```python
+print(details["target_label"])
+print(details["rival_label"])
+print(details["target_probability"])
+print(details["evidence"])
+print(details["exactness_residual"])
+```
+
+| Field | Meaning |
+| --- | --- |
+| `target_label` | Model-selected target class. |
+| `rival_label` | Model-selected rival class. |
+| `target_probability` | Probability for the target class. |
+| `lambda_hyb` | Hyb-FPDE mixture weight used for the explanation. |
+| `evidence` | Target-versus-rival contrast decomposed by FPDE. |
+| `exactness_residual` | Numerical difference between summed attributions and direct evidence. |
+
+<Note>
+  Positive attribution values support the target class.
+  Negative attribution values support the rival class.
+</Note>
+
+## Show the strongest features
+
+```python
+import numpy as np
+
+feature_names = np.asarray(data.feature_names)
+order = np.argsort(np.abs(attributions))[::-1]
+
+for index in order[:10]:
+    print(feature_names[index], attributions[index])
+```
+
+Use the raw attribution values for evidence-scale reporting.
+Use normalized values only when you need a display scale.
+
+## Common next step
+
+After you confirm one explanation, use [Explain batches](/explain-batches) to explain evaluation or test samples with the same fitted engine.

@@ -1,0 +1,73 @@
+---
+title: "Interpreting results"
+description: "Read FPDE signs, evidence values, and result metadata correctly"
+---
+
+An FPDE explanation is a target-versus-rival feature attribution.
+Read every value in that local contrast.
+
+## Attribution signs
+
+Positive attribution values support the target class.
+Negative attribution values support the rival class.
+Values near zero contribute little to that local contrast.
+
+```python
+for name, value in zip(feature_names, attributions):
+    if value > 0:
+        side = "supports the target class"
+    elif value < 0:
+        side = "supports the rival class"
+    else:
+        side = "is neutral in this contrast"
+    print(name, value, side)
+```
+
+<Note>
+  The sign is relative to the selected target class and rival class.
+  A feature can change sign under a different rival class.
+</Note>
+
+## Evidence and exactness
+
+`details["evidence"]` is the scalar contrast decomposed by the attribution vector.
+For an exact decomposition, the attribution sum should be close to the evidence value.
+
+```python
+print(attributions.sum())
+print(details["evidence"])
+print(details["exactness_residual"])
+```
+
+Small residuals are expected because of floating-point arithmetic.
+Large residuals suggest a numerical or input-shape problem.
+
+## Target and rival labels
+
+With `FPDEEngine`, the target class comes from the highest `predict_proba` value.
+The rival class comes from the second-highest `predict_proba` value.
+
+Use these labels when you explain results to readers.
+Avoid saying that an attribution explains every class at once.
+
+## Raw and normalized values
+
+Use raw attributions when you report evidence-scale values.
+Use normalized attributions only for display or comparison.
+
+```python
+from fpde import diff_fpde
+
+explanation = diff_fpde(x, target_prototype, rival_prototype)
+print(explanation.attributions)
+print(explanation.normalized_attributions)
+```
+
+If you call lower-level functions and receive an `FPDEExplanation`, use `normalized_attributions` for display-scale summaries.
+Keep `attributions` for the raw decomposition.
+
+## What not to claim
+
+- Do not describe FPDE as a causal explanation method.
+- Do not claim support for prototype types beyond class-mean prototypes in `fpde 0.1.0`.
+- Do not compare attribution signs across samples without checking each sample's target and rival class.

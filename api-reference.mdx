@@ -1,19 +1,20 @@
 ---
 title: "API reference"
-description: "Public FPDE classes, functions, parameters, and result objects"
+description: "Stable public FPDE 0.1.0 classes, functions, parameters, and result objects"
 ---
 
-Import the public package as `fpde`.
+Import public APIs from `fpde`.
+The `fpde.core` module also aggregates the same public API for compatibility.
 
 ```python
 from fpde import FPDEEngine, class_mean_prototypes, diff_fpde
 ```
 
-This page documents the public API exported by `fpde` and `fpde.core`.
+This page documents stable public APIs for `fpde 0.1.0`.
 
-## `FPDEEngine`
+## FPDEEngine
 
-Use `FPDEEngine` for repeated explanations, batch explanations, Hyb-FPDE, grid search, and validation-based lambda selection.
+Use `FPDEEngine` for repeated explanations, batch explanations, Hyb-FPDE, grid search, and validation-based `lambda_hyb` selection.
 
 ### `FPDEEngine.fit`
 
@@ -86,6 +87,25 @@ engine.explain_matrix(
 
 Returns only the attribution matrix for a batch.
 
+### `engine.select_lambda`
+
+```python
+engine.select_lambda(
+    X_val,
+    *,
+    lambda_hyb_grid=...,
+    fractions=(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
+    normalize="l1",
+    anchor_strategy="mean",
+    eps=1e-12,
+    max_working_bytes=268435456,
+    model=None,
+)
+```
+
+Selects `lambda_hyb` by held-out deletion and insertion validation.
+Returns a `HybFPDEValidationSelectionResult`.
+
 ### `engine.grid_search`
 
 ```python
@@ -108,26 +128,19 @@ engine.grid_search(
 Searches Diff-FPDE, Cos-FPDE, and Hyb-FPDE candidate settings.
 Returns a `HybFPDEGridSearchResult`.
 
-### `engine.select_lambda`
+## Shared parameters
 
-```python
-engine.select_lambda(
-    X_val,
-    *,
-    lambda_hyb_grid=...,
-    fractions=(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-    normalize="l1",
-    anchor_strategy="mean",
-    eps=1e-12,
-    max_working_bytes=268435456,
-    model=None,
-)
-```
-
-Selects `lambda_hyb` by held-out deletion and insertion validation.
-Returns a `HybFPDEValidationSelectionResult`.
+| Parameter | Values | Description |
+| --- | --- | --- |
+| `lambda_hyb` | Float in `[0, 1]` | Hyb-FPDE mixture weight. `1.0` is Diff-FPDE. `0.0` is Cos-FPDE. |
+| `normalize` | `"l1"` or `"none"` | Whether to L1-normalize component attribution vectors before Hyb-FPDE mixing. |
+| `anchor_strategy` | `"mean"`, `"zero"`, or `"none"` | Anchor source for Cos-FPDE. |
+| `eps` | Positive float | Regularization value for cosine norms. |
+| `model` | Classifier | Overrides the engine model for the call. Must support `predict_proba` and `classes_` when probabilities are needed. |
 
 ## Prototype helpers
+
+Use these functions when you want manual control over prototype state.
 
 ### `class_mean_prototypes`
 
@@ -186,6 +199,7 @@ diff_fpde(
 ```
 
 Computes a Diff-FPDE explanation for one target/rival prototype pair.
+Returns an `FPDEExplanation`.
 
 ### `cos_fpde`
 
@@ -205,6 +219,7 @@ cos_fpde(
 ```
 
 Computes a Cos-FPDE explanation for one target/rival prototype pair.
+Returns an `FPDEExplanation`.
 
 ### `explain_with_selected_prototypes`
 
@@ -268,6 +283,15 @@ perturbation_curves(
 Computes deletion and insertion curves for one attribution vector.
 Features are ranked by signed positive attribution in descending order.
 
+### `parse_float_grid`
+
+```python
+parse_float_grid(value)
+```
+
+Parses a float grid helper value.
+Use it when you need the same grid-parsing behavior as FPDE command or workflow code.
+
 ## Result objects
 
 | Object | Contains |
@@ -286,3 +310,5 @@ Features are ranked by signed positive attribution in descending order.
 | `feature dimension mismatch` | Input vectors do not match the fitted training feature count. | Apply the same preprocessing pipeline to training, validation, and explanation data. |
 | `lambda_hyb must be in [0, 1]` | The Hyb-FPDE mixture weight is outside the valid range. | Pass a finite value from 0.0 to 1.0. |
 | `eps must be positive` | Cosine regularization was zero or negative. | Use a positive `eps`, such as `1e-12`. |
+
+For a guided version of these fixes, see [Troubleshooting](/troubleshooting).

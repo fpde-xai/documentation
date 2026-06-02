@@ -6,7 +6,12 @@ description: "Select Hyb-FPDE settings with grid search and perturbation curves"
 FPDE includes validation helpers for choosing explanation settings.
 Use them when you want a reproducible fixed configuration before explaining evaluation or test samples.
 
-## Select `lambda_hyb`
+<Note>
+  This page is kept as a concept-level overview.
+  Use [Select lambda_hyb](/select-lambda) and [Validate explanations](/validate-explanations) for task-focused workflows.
+</Note>
+
+## Select lambda_hyb
 
 `FPDEEngine.select_lambda` evaluates a grid of `lambda_hyb` candidates on held-out samples.
 For each candidate, it computes deletion and insertion curves.
@@ -22,26 +27,7 @@ print(selection.best_lambda)
 print(selection.best_config)
 ```
 
-The combined score is:
-
-```text
-combined_score = 0.5 * (deletion_drop_auc + insertion_auc)
-```
-
-The selected lambda is the candidate with the best validation score.
 Use the selected value for later calls to `explain_one`, `explain_batch`, or `explain_matrix`.
-
-```python
-attributions, details = engine.explain_batch(
-    X_test,
-    lambda_hyb=selection.best_lambda,
-)
-```
-
-<Tip>
-  Use validation data that is separate from the final reporting split.
-  Record `selection.rows` with your experiment artifacts.
-</Tip>
 
 ## Run grid search
 
@@ -93,11 +79,3 @@ print(curves["insertion_prob"])
 Features are ranked by signed positive attribution in descending order.
 Deletion replaces top-ranked features with the baseline.
 Insertion starts from the baseline and restores top-ranked features.
-
-## Practical checks
-
-- Confirm that `predict_proba` returns at least two class columns.
-- Confirm that `model.classes_` matches the labels used to fit FPDE prototypes.
-- Apply the same preprocessing pipeline to training, validation, and explanation data.
-- Check `exactness_residual` for numerical stability.
-- Save the grid, fractions, baseline, and selected lambda.

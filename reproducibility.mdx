@@ -44,7 +44,7 @@ Use this checklist when reporting FPDE experiments, publishing results, or compa
 
 ## Prototype state
 
-- Record how prototypes were built. FPDE currently provides class-mean prototypes.
+- Record how prototypes were built. FPDE `0.1.0` provides class-mean prototypes.
 - Record the training data used to build prototypes.
 - Record class labels and label ordering.
 - If you use `prepare_fpde_context`, preserve the context-generation inputs.
@@ -59,11 +59,10 @@ Use this checklist when reporting FPDE experiments, publishing results, or compa
 
 ## Validation and sanity checks
 
-- Run the test suite with `python -m pytest`.
 - Verify that attribution shapes match the number of features.
 - Check that attribution values are finite.
 - Check that target and rival labels are different for multiclass explanations.
-- Inspect deletion and insertion curves for a representative sample.
+- Inspect deletion and insertion curves for representative samples.
 - Confirm that repeated runs with fixed seeds are deterministic.
 
 ## Minimal reporting template

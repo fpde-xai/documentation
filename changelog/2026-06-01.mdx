@@ -1,18 +1,22 @@
 ---
 title: "Week of June 1, 2026"
-description: "FPDE v0.1.0 ships on PyPI with Bayesian-FPDE lambda posterior selection, a new plotting example notebook, and MIT or Apache-2.0 dual licensing."
+description: "FPDE v0.1.0 ships on PyPI with prototype-contrast attribution, validation helpers, and MIT or Apache-2.0 dual licensing."
 ---
 
 ## New features
 
-**FPDE is on PyPI.** The first public release (`v0.1.0`) of the `fpde` package is now available. Install it with `pip install fpde` and start producing prototype-contrast feature attributions. See the [quickstart](/quickstart) to get going.
+**FPDE is on PyPI.** The first public release (`v0.1.0`) of the `fpde` package is available.
+Install it with `python -m pip install fpde`.
+See the [quickstart](/quickstart) to run your first explanation.
 
-**Bayesian-FPDE.** Select the Hyb-FPDE mixture weight `lambda_hyb` by building a posterior over candidate values from held-out samples, then explain with the posterior mean. Use this when you want an uncertainty-aware choice of `lambda_hyb` instead of a single grid-search winner. See the [method overview](/method-overview) and [API reference](/api-reference).
+**Prototype-contrast explanations.** FPDE builds class-mean prototypes from training data and explains target-versus-rival evidence with Diff-FPDE, Cos-FPDE, and Hyb-FPDE.
 
-**Plotting example notebook.** A new end-to-end notebook walks through fitting prototypes, computing attributions, and visualizing them. See [examples](/examples).
+**Validation helpers.** Use `FPDEEngine.select_lambda` to choose `lambda_hyb` on held-out validation data.
+Use `perturbation_curves` to compute deletion and insertion curves for an attribution vector.
 
 ## Updates
 
-**Dual license.** The package is now distributed under `MIT OR Apache-2.0`, giving you the choice of either license.
+**Dual license.** The package is distributed under `MIT OR Apache-2.0`.
+You may choose either license.
 
-**Continuous publishing.** Releases now flow automatically to TestPyPI and PyPI, so future versions land faster.
+**Continuous publishing.** Releases flow through automated publishing to PyPI.

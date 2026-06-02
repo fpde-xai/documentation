@@ -1,0 +1,76 @@
+---
+title: "Troubleshooting"
+description: "Fix common FPDE setup, model, shape, and parameter errors"
+---
+
+Use this page when an FPDE call fails or returns an unexpected explanation.
+
+<Accordion title="model must implement predict_proba">
+  FPDE model-driven workflows need class probabilities.
+  Pass a fitted classifier that implements `predict_proba`.
+
+  ```python
+  hasattr(model, "predict_proba")
+  ```
+
+  For scikit-learn, many classifiers support this directly.
+  Some models need probability support enabled before fitting.
+</Accordion>
+
+<Accordion title="model must expose classes_">
+  FPDE maps probability columns back to labels through `classes_`.
+  Fit the classifier before calling FPDE.
+
+  ```python
+  model.fit(X_train, y_train)
+  print(model.classes_)
+  ```
+</Accordion>
+
+<Accordion title="feature dimension mismatch">
+  The explanation input does not match the feature count used to fit the engine.
+  Apply the same preprocessing pipeline to training, validation, and explanation data.
+
+  Check scaling, one-hot encoding, feature selection, and column order.
+</Accordion>
+
+<Accordion title="lambda_hyb must be in [0, 1]">
+  `lambda_hyb` is the Hyb-FPDE mixture weight.
+  Pass a finite number from `0.0` through `1.0`.
+
+  ```python
+  attributions, details = engine.explain_one(x, lambda_hyb=0.5)
+  ```
+</Accordion>
+
+<Accordion title="eps must be positive">
+  Cosine computations use epsilon-regularized norms.
+  Use a positive value such as `1e-12`.
+
+  ```python
+  attributions, details = engine.explain_one(x, lambda_hyb=0.5, eps=1e-12)
+  ```
+</Accordion>
+
+<Accordion title="The target and rival labels look wrong">
+  `FPDEEngine` chooses labels from the classifier probability output.
+  The target class is the highest-probability class.
+  The rival class is the second-highest-probability class.
+
+  Inspect the model probabilities and `classes_`.
+
+  ```python
+  probabilities = model.predict_proba([x])[0]
+  for label, probability in zip(model.classes_, probabilities):
+      print(label, probability)
+  ```
+</Accordion>
+
+## Quick checklist
+
+- Use Python 3.12 or newer.
+- Fit the classifier before fitting or using `FPDEEngine`.
+- Pass data in the same feature space used by the classifier.
+- Scale features when units differ.
+- Use validation data, not test data, to select `lambda_hyb`.
+- Save feature names and feature order with attribution outputs.

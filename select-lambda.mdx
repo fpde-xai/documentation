@@ -1,0 +1,82 @@
+---
+title: "Select lambda_hyb"
+description: "Choose a Hyb-FPDE mixture weight with held-out validation data"
+---
+
+Use `FPDEEngine.select_lambda` to choose a fixed `lambda_hyb` before you explain final evaluation or test samples.
+The method evaluates candidates with deletion and insertion perturbation curves on held-out data.
+
+## Prerequisites
+
+- A fitted `FPDEEngine`
+- Held-out validation samples `X_val`
+- A classifier with `predict_proba` and `classes_`
+- A candidate grid for `lambda_hyb`
+
+Keep validation data separate from the final reporting split.
+
+## Run selection
+
+<Steps>
+  <Step title="Choose a candidate grid">
+    Start with a small grid.
+
+    ```python
+    lambda_grid = (0.0, 0.25, 0.5, 0.75, 1.0)
+    ```
+  </Step>
+
+  <Step title="Evaluate validation samples">
+    Score each candidate on held-out samples.
+
+    ```python
+    selection = engine.select_lambda(
+        X_val,
+        lambda_hyb_grid=lambda_grid,
+        fractions=(0.0, 0.1, 0.3, 0.5, 0.7, 1.0),
+        normalize="l1",
+    )
+    ```
+  </Step>
+
+  <Step title="Reuse the selected value">
+    Explain final samples with the selected `lambda_hyb`.
+
+    ```python
+    attributions, details = engine.explain_batch(
+        X_test,
+        lambda_hyb=selection.best_lambda,
+        normalize="l1",
+    )
+    ```
+  </Step>
+</Steps>
+
+## Inspect the result
+
+```python
+print(selection.best_lambda)
+print(selection.best_config)
+print(selection.rows)
+```
+
+`selection.rows` contains the candidate scores.
+Save it with your experiment artifacts.
+
+## How selection is scored
+
+For each candidate, FPDE computes deletion and insertion curves.
+Deletion replaces top-ranked features with the baseline.
+Insertion starts from the baseline and restores top-ranked features.
+
+The combined score is:
+
+```text
+combined_score = 0.5 * (deletion_drop_auc + insertion_auc)
+```
+
+The selected lambda is the candidate with the best validation score.
+
+<Tip>
+  Use the same `normalize`, `anchor_strategy`, and `eps` values during selection and final explanation.
+</Tip>

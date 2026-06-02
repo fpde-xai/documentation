@@ -11,25 +11,35 @@
   "navigation": {
     "pages": [
       {
-        "group": "Getting Started",
+        "group": "Getting started",
         "pages": [
           "index",
-          "quickstart",
-          "examples"
+          "installation",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "explain-one",
+          "explain-batches",
+          "select-lambda",
+          "validate-explanations"
         ]
       },
       {
         "group": "Concepts",
         "pages": [
           "method-overview",
-          "validation",
+          "interpreting-results",
           "reproducibility"
         ]
       },
       {
         "group": "Reference",
         "pages": [
-          "api-reference"
+          "api-reference",
+          "troubleshooting"
         ]
       },
       {

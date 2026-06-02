@@ -1,56 +1,60 @@
 ---
 title: "Introduction"
-description: "Explain classification results with prototype-contrast feature attribution"
+description: "Use FPDE to explain classification results with prototype-contrast feature attribution"
 ---
 
 Feature Prototype Direction Explainer (FPDE) is a Python package for prototype-contrast feature attribution.
 It explains a classification result by comparing an input with a prototype for the target class and a prototype for a rival class.
 FPDE then decomposes that contrast into one contribution per feature.
 
-Use FPDE when you need a lightweight, post-hoc explanation method for tabular-style feature vectors and black-box classifiers that expose class probabilities.
-
-## What you can do
-
-- Build class-mean prototypes from training data.
-- Explain one sample with Diff-FPDE, Cos-FPDE, or Hyb-FPDE.
-- Explain batches while reusing fitted prototype state.
-- Search Diff, Cos, and Hyb-FPDE candidate settings.
-- Select `lambda_hyb` with held-out deletion and insertion validation.
-- Compute deletion and insertion perturbation curves for an attribution vector.
-
-## How FPDE explains a prediction
-
-FPDE starts from a local class contrast.
-The target class is usually the classifier's top predicted class.
-The rival class is usually the second-highest-probability class.
-
-FPDE compares the input against the target prototype and the rival prototype.
-Positive attribution values support the target class relative to the rival class.
-Negative values support the rival class relative to the target class.
+Use FPDE when you need a lightweight, post-hoc explanation method for tabular feature vectors and classifiers that expose class probabilities.
 
 <CardGroup cols={2}>
-  <Card title="Quickstart" icon="rocket" href="/quickstart">
-    Install FPDE, fit an engine, and explain your first sample.
+  <Card title="Install FPDE" icon="box-archive" href="/installation">
+    Install the PyPI package and check that your environment meets the requirements.
   </Card>
-  <Card title="Method overview" icon="diagram-project" href="/method-overview">
-    Learn the target-versus-rival contrast behind Diff-FPDE, Cos-FPDE, and Hyb-FPDE.
+  <Card title="Run the quickstart" icon="rocket" href="/quickstart">
+    Train a scikit-learn classifier and explain your first sample.
   </Card>
-  <Card title="API reference" icon="code" href="/api-reference">
-    Review the public functions, classes, parameters, and result objects.
+  <Card title="Explain one sample" icon="magnifying-glass" href="/explain-one">
+    Fit reusable prototype state and inspect a single target-versus-rival explanation.
   </Card>
-  <Card title="Reproducibility" icon="clipboard-check" href="/reproducibility">
-    Record the settings you need to reproduce FPDE experiments.
+  <Card title="Explain batches" icon="table" href="/explain-batches">
+    Generate attribution matrices while keeping per-sample metadata.
+  </Card>
+  <Card title="Choose lambda_hyb" icon="sliders" href="/select-lambda">
+    Select a Hyb-FPDE mixture weight with held-out deletion and insertion validation.
+  </Card>
+  <Card title="Look up APIs" icon="code" href="/api-reference">
+    Review public classes, functions, parameters, result objects, and errors.
   </Card>
 </CardGroup>
 
-## Requirements
+## What FPDE does
 
-FPDE requires Python 3.12 or newer.
-The package depends on NumPy and scikit-learn.
+FPDE builds one class-mean prototype per class from training data.
+For one input, it chooses a target class and a rival class.
+With `FPDEEngine`, the target class is the model's highest-probability class and the rival class is the second-highest-probability class.
+
+The output is an attribution vector with one value per feature.
+Positive values support the target class.
+Negative values support the rival class.
+
+## What you need
+
+- Python 3.12 or newer
+- NumPy and scikit-learn
+- Training data and labels in the same feature space used by the classifier
+- A fitted classifier with `predict_proba` and `classes_` for model-driven workflows
 
 ```bash
 python -m pip install fpde
 ```
+
+<Tip>
+  Start with the <a href="/quickstart">quickstart</a> if you are new to FPDE.
+  Use the <a href="/method-overview">method overview</a> when you need the details behind Diff-FPDE, Cos-FPDE, and Hyb-FPDE.
+</Tip>
 
 ## Project links
 
