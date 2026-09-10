@@ -80,3 +80,59 @@ The selected lambda is the candidate with the best validation score.
 <Tip>
   Use the same `normalize`, `anchor_strategy`, and `eps` values during selection and final explanation.
 </Tip>
+
+## Bayesian selection
+
+Use `FPDEEngine.select_bayesian_lambda` when you want a posterior over `lambda_hyb` candidates instead of a single fixed value.
+The method scores each unique candidate with the same deletion and insertion validation as `select_lambda`, combines the scores with a Beta prior, and normalizes the result into a finite-grid posterior.
+
+The posterior is limited to the `lambda_hyb` grid.
+It does not sample class prototypes, estimate feature-level prototype uncertainty, or model classifier uncertainty.
+
+### Build the posterior
+
+```python
+selection = engine.select_bayesian_lambda(
+    X_val,
+    lambda_hyb_grid=(0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0),
+    fractions=(0.0, 0.1, 0.25, 0.5, 0.75, 1.0),
+    alpha=1.0,
+    beta=1.0,
+    temperature=0.5,
+    credible_mass=0.90,
+)
+```
+
+- `alpha` and `beta` set the Beta prior over `lambda_hyb`. The defaults `alpha=1.0, beta=1.0` give a uniform prior.
+- `temperature` scales how sharply validation scores concentrate posterior mass. Lower values produce a more peaked posterior.
+- `credible_mass` sets the coverage of the reported credible interval. The default is `0.95`.
+
+### Inspect the posterior
+
+```python
+lo, hi = selection.credible_interval
+print(selection.posterior_mean_lambda)
+print(selection.map_lambda)
+print(f"[{lo:.3f}, {hi:.3f}]")
+
+for row in selection.sorted_rows():
+    print(row["lambda_hyb"], row["posterior_probability"], row["score"])
+```
+
+`selection.posterior_rows` holds the posterior mass and validation score for each candidate.
+The credible interval is an interval over `lambda_hyb` candidates, not a per-feature attribution interval.
+
+### Explain with the posterior mean
+
+Pass the selection result to `explain_one_bayesian` or `explain_batch_bayesian`.
+Both use `selection.posterior_mean_lambda` and reuse the `normalize`, `anchor_strategy`, and `eps` values from selection.
+
+```python
+attribution, details = engine.explain_one_bayesian(x, selection)
+batch_attr, batch_details = engine.explain_batch_bayesian(X_test, selection)
+```
+
+The result is a Bayesian model-averaged Hyb-FPDE explanation over the finite lambda grid.
+`details["posterior_mean_lambda"]` records the lambda that produced the attributions.
+
+For a runnable end-to-end walkthrough, including posterior plots and credible-interval attribution ranges, see [`examples/bayesian_fpde_example.ipynb`](https://github.com/fpde-xai/fpde/blob/main/examples/bayesian_fpde_example.ipynb).
